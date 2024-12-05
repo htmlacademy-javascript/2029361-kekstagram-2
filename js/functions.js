@@ -1,6 +1,6 @@
 
 const checkingStringLength = (string, stringLength) => string.length <= stringLength;
-checkingStringLength();
+checkingStringLength('Мама мыла милу', 10);
 
 function polydromeCheck(text) {
 
@@ -15,11 +15,12 @@ function polydromeCheck(text) {
   }
   return false;
 }
-polydromeCheck();
+polydromeCheck('ДовО д');
 
 function extractNumbers (text) {
   let allNumbers = '';
   toString(text);
+  text = text.replaceAll(' ', '');
   for (let i = 0; i < text.length; i++) {
     if (!isNaN(Number(text[i]))) {
       allNumbers += text[i];
@@ -27,4 +28,4 @@ function extractNumbers (text) {
   }
   return allNumbers;
 }
-extractNumbers();
+extractNumbers('gssee45 2983f2');
