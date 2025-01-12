@@ -72,5 +72,3 @@ const createImage = () => {
 };
 
 const generatedPhotos = Array.from({ length: PHOTOS_COUNT }, createImage);
-
-console.log(generatedPhotos);
