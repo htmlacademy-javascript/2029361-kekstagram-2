@@ -15,7 +15,7 @@ const names = [
   'Фотоспец3002'
 ];
 
-const descriptions = [
+const description = [
   'здесь мог быть lorem, но ты просто чилишь',
   'Русалка села на шпагат',
   'Колобок повесился'
@@ -31,4 +31,4 @@ const photoValues = {
   RANDOM_MIN_NUMBER_LIKES: 15,
 };
 
-export {comments, photoValues, names, descriptions};
+export {comments, photoValues, names, description};
