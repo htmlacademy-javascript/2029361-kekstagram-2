@@ -1,4 +1,4 @@
-import {comments, photoValues, names, descriptions} from './data';
+import {comments, photoValues, names, description} from './data';
 
 const getRandomInteger = (a, b) => {
   const lower = Math.ceil(Math.min(a, b));
@@ -25,7 +25,7 @@ const createComments = () => {
 };
 
 const createImage = () => {
-  const randomDescriptionIndex = getRandomInteger(0, descriptions.length - 1);
+  const randomDescriptionIndex = getRandomInteger(0, description.length - 1);
   const randomLikes = getRandomInteger(photoValues.RANDOM_MIN_NUMBER_LIKES, photoValues.RANDOM_MAX_NUMBER_LIKES);
   const randomCommentsCount = getRandomInteger(photoValues.RANDOM_MIN_NUMBER_COMMENTS, photoValues.RANDOM_MAX_NUMBER_COMMENTS);
   const commentsArray = Array.from({ length: randomCommentsCount }, createComments);
@@ -33,10 +33,14 @@ const createImage = () => {
   return {
     id: ++indexPhoto,
     url: `photos/${indexPhoto}.jpg`,
-    description: descriptions[randomDescriptionIndex],
+    description: description[randomDescriptionIndex],
     likes: randomLikes,
     comments: commentsArray,
   };
 };
 
-export {createComments, createImage, getRandomInteger};
+const generatedPhotos = function () {
+  return Array.from({ length: photoValues.PHOTOS_COUNT }, createImage);
+};
+
+export {createComments, getRandomInteger, generatedPhotos};
