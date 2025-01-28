@@ -1,24 +1,10 @@
-import { photoGallery } from './rendering-images';
-import { generatedPhotos } from './until';
+import { photoGallery, photos } from './rendering-images';
 
 const pictures = photoGallery.querySelectorAll('.picture');
 const modalBigPicture = document.querySelector('.big-picture');
 const buttonBigPictureCancel = modalBigPicture.querySelector('.big-picture__cancel');
 
 const exampleComment = document.querySelector('#user-comments').content.querySelector('.social__comment');
-const allGenerateComment = modalBigPicture.querySelector('.social__comments');
-const allComment = generatedPhotos();
-
-const generateComment = document.createDocumentFragment();
-
-allComment.forEach(({comments}) => {
-  const comment = exampleComment.cloneNode(true);
-  comment.querySelector('.social__picture').alt = comments.name;
-  comment.querySelector('.social__picture').src = comments.avatar;
-  comment.querySelector('.social__text').textContent = comments.message;
-  generateComment.appendChild(comment);
-});
-allGenerateComment.appendChild(generateComment);
 
 const onDocumentKeydown = (evt) => {
   if (evt.key === 'Escape') {
@@ -42,19 +28,35 @@ for (let i = 0; i < pictures.length; i++) {
   });
 }
 
-function openModalBigPicture (evt) {
+function openModalBigPicture(link) {
   modalBigPicture.classList.remove('hidden');
   document.addEventListener('keydown', onDocumentKeydown);
-  modalBigPicture.querySelector('.big-picture__img').children.src = evt.querySelector('.picture__img').src;
-  modalBigPicture.querySelector('.likes-count').textContent = evt.querySelector('.picture__likes').textContent;
-  modalBigPicture.querySelector('.social__comment-shown-count').textContent = evt.querySelector('.picture__comments').textContent;
-  modalBigPicture.querySelector('.social__comment-total-count').textContent = evt.querySelector('.picture__comments').textContent;
-  modalBigPicture.querySelector('.social__caption').textContent = evt.querySelector('.picture__img').alt;
+
+  const elem = photos.find((el) => el.id === Number(link.dataset.id));
+
+  // Устанавливаем данные в модальное окно
+  modalBigPicture.querySelector('.big-picture__img img').src = elem.url;
+  modalBigPicture.querySelector('.likes-count').textContent = elem.likes;
+  modalBigPicture.querySelector('.social__caption').textContent = elem.description;
+  modalBigPicture.querySelector('.social__comment-shown-count').textContent = elem.comments.length;
+  modalBigPicture.querySelector('.social__comment-total-count').textContent = elem.comments.length;
+
+  // Очищаем старые комментарии
+  const commentsContainer = modalBigPicture.querySelector('.social__comments');
+  commentsContainer.innerHTML = '';
+
+  // Генерируем и добавляем новые комментарии
+  const commentsFragment = document.createDocumentFragment();
+  elem.comments.forEach(({ name, avatar, message }) => {
+    const comment = exampleComment.cloneNode(true);
+    comment.querySelector('.social__picture').alt = name;
+    comment.querySelector('.social__picture').src = avatar;
+    comment.querySelector('.social__text').textContent = message;
+    commentsFragment.appendChild(comment);
+  });
+  commentsContainer.appendChild(commentsFragment);
 
   document.querySelector('body').classList.add('modal-open');
-
-  modalBigPicture.querySelector('.social__comment-count').classList.add('hidden');
-  modalBigPicture.querySelector('.comments-loader').classList.add('hidden');
 }
 
 
@@ -68,4 +70,4 @@ function closeModalBigPicture (){
   modalBigPicture.querySelector('.comments-loader').classList.remove('hidden');
 }
 
-export {};
+export {openModalBigPicture};
