@@ -1,1 +1,2 @@
-import {} from './rendering-images';
+import {} from './rendering-images.js';
+import {} from './fullScreenViewer';
