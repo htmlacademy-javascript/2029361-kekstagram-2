@@ -13,6 +13,94 @@ const MAX_HASHTAGS = 5;
 const MAX_SYMBOLS = 20;
 const MAX_DESCRIPTION_LENGTH = 140;
 
+const sliderElement = form.querySelector('.effect-level__slider');
+const sliderInput = form.querySelector('.effect-level__value');
+const radioEffects = form.querySelectorAll('.effects__radio');
+const effectLevelContainer = form.querySelector('.img-upload__effect-level');
+const EFFECTS = {
+  none: { min: 0, max: 100, step: 1, filter: () => 'none', hidden: true },
+  chrome: { min: 0, max: 1, step: 0.1, filter: (value) => `grayscale(${value})` },
+  sepia: { min: 0, max: 1, step: 0.1, filter: (value) => `sepia(${value})` },
+  marvin: { min: 0, max: 100, step: 1, filter: (value) => `invert(${value}%)` },
+  phobos: { min: 0, max: 3, step: 0.1, filter: (value) => `blur(${value}px)` },
+  heat: { min: 1, max: 3, step: 0.1, filter: (value) => `brightness(${value})` },
+};
+
+
+const bigger = form.querySelector('.scale__control--bigger');
+const smaller = form.querySelector('.scale__control--smaller');
+const controlSizeInput = form.querySelector('.scale__control--value');
+const SCALE_STEP = 25;
+const MIN_SCALE = 25;
+const MAX_SCALE = 100;
+
+// Функция уменьшения масштаба
+const onSmallerClick = () => {
+  let currentValue = parseInt(controlSizeInput.value.replace('%', ''), 10);
+
+  if (currentValue > MIN_SCALE) {
+    currentValue -= SCALE_STEP;
+    controlSizeInput.value = `${currentValue}%`;
+    previewImage.style.transform = `scale(${currentValue / 100})`;
+  }
+};
+
+// Функция увеличения масштаба
+const onBiggerClick = () => {
+  let currentValue = parseInt(controlSizeInput.value.replace('%', ''), 10);
+
+  if (currentValue < MAX_SCALE) {
+    currentValue += SCALE_STEP;
+    controlSizeInput.value = `${currentValue}%`;
+    previewImage.style.transform = `scale(${currentValue / 100})`;
+  }
+};
+
+// Обработчики на кнопки
+smaller.addEventListener('click', onSmallerClick);
+bigger.addEventListener('click', onBiggerClick);
+
+// Создаём слайдер
+noUiSlider.create(sliderElement, {
+  range: { min: 0, max: 100 },
+  start: 100,
+  step: 1,
+  connect: 'lower',
+});
+
+const updateSlider = (effect) => {
+  const settings = EFFECTS[effect];
+
+  sliderElement.noUiSlider.updateOptions({
+    range: { min: settings.min, max: settings.max },
+    start: settings.max,
+    step: settings.step,
+  });
+
+  effectLevelContainer.classList.toggle('hidden', effect === 'none');
+};
+
+// Обработчик выбора эффекта
+radioEffects.forEach((radio) => {
+  radio.addEventListener('change', (evt) => {
+    const effect = evt.target.value;
+    updateSlider(effect);
+
+    sliderElement.noUiSlider.off('update');
+    sliderElement.noUiSlider.on('update', (_, handle, values) => {
+      const value = values[handle];
+      sliderInput.value = value;
+      previewImage.style.filter = EFFECTS[effect].filter(value);
+    });
+
+    // При смене эффекта сбрасываем значение на максимум
+    sliderElement.noUiSlider.set(EFFECTS[effect].max);
+  });
+});
+
+// Устанавливаем эффект «Оригинал» по умолчанию
+updateSlider('none');
+
 const pristine = new Pristine(form, {
   classTo: 'img-upload__field-wrapper',
   errorTextParent: 'img-upload__field-wrapper',
@@ -37,6 +125,9 @@ const closeImageEditingWindow = () => {
   pristine.reset(); // Сбрасываем ошибки валидации
 
   document.removeEventListener('keydown', onDocumentKeydown); // Убираем обработчик Esc
+
+  updateSlider('none');
+  previewImage.style.filter = 'none';
 };
 
 // Функция закрытия по клавише Esc, кроме случаев фокуса в полях ввода
@@ -61,9 +152,6 @@ fileInput.addEventListener('change', (event) => {
 
   openImageEditingWindow(); // Открываем окно редактирования
 });
-
-// Обработчик закрытия окна при нажатии на кнопку
-closeButton.addEventListener('click', closeImageEditingWindow);
 
 // ======== Валидация хештегов ========
 const hashtagRules = [
@@ -123,17 +211,13 @@ const getHashtagsError = (value) => {
 // Правило для валидации комментария
 
 const validateDescription = (value) => value.length <= MAX_DESCRIPTION_LENGTH;
+
 const getDescriptionError = () =>
   `Длина комментария не может превышать ${MAX_DESCRIPTION_LENGTH} символов.`;
 
 pristine.addValidator(hashtagInput, validateHashtags, getHashtagsError);
 pristine.addValidator(commentInput, validateDescription, getDescriptionError);
 
-// ======== Обработчик отправки формы ========
-form.addEventListener('submit', (evt) => {
-  evt.preventDefault(); // Отменяем стандартную отправку формы
-  pristine.validate();
-});
 
 // ======== Отключение Esc при фокусе на полях ========
 [hashtagInput, commentInput].forEach((input) => {
@@ -144,5 +228,14 @@ form.addEventListener('submit', (evt) => {
     }
   });
 });
+
+// ======== Обработчик отправки формы ========
+form.addEventListener('submit', (evt) => {
+  evt.preventDefault(); // Отменяем стандартную отправку формы
+  pristine.validate();
+});
+
+// Обработчик закрытия окна при нажатии на кнопку
+closeButton.addEventListener('click', closeImageEditingWindow);
 
 export {};
