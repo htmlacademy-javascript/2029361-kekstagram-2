@@ -12,6 +12,11 @@ const commentInput = document.querySelector('.text__description'); // Поле �
 const MAX_HASHTAGS = 5;
 const MAX_SYMBOLS = 20;
 const MAX_DESCRIPTION_LENGTH = 140;
+const pristine = new Pristine(form, {
+  classTo: 'img-upload__field-wrapper',
+  errorTextParent: 'img-upload__field-wrapper',
+  errorTextClass: 'pristine-error',
+});
 
 const sliderElement = form.querySelector('.effect-level__slider');
 const sliderInput = form.querySelector('.effect-level__value');
@@ -56,10 +61,6 @@ const onBiggerClick = () => {
   }
 };
 
-// Обработчики на кнопки
-smaller.addEventListener('click', onSmallerClick);
-bigger.addEventListener('click', onBiggerClick);
-
 // Создаём слайдер
 noUiSlider.create(sliderElement, {
   range: { min: 0, max: 100 },
@@ -100,12 +101,6 @@ radioEffects.forEach((radio) => {
 
 // Устанавливаем эффект «Оригинал» по умолчанию
 updateSlider('none');
-
-const pristine = new Pristine(form, {
-  classTo: 'img-upload__field-wrapper',
-  errorTextParent: 'img-upload__field-wrapper',
-  errorTextClass: 'pristine-error',
-});
 
 // Функция открытия окна редактирования
 const openImageEditingWindow = () => {
@@ -218,6 +213,9 @@ const getDescriptionError = () =>
 pristine.addValidator(hashtagInput, validateHashtags, getHashtagsError);
 pristine.addValidator(commentInput, validateDescription, getDescriptionError);
 
+// Обработчики на кнопки увеличения и уменьшения изображения
+smaller.addEventListener('click', onSmallerClick);
+bigger.addEventListener('click', onBiggerClick);
 
 // ======== Отключение Esc при фокусе на полях ========
 [hashtagInput, commentInput].forEach((input) => {
