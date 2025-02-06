@@ -16,6 +16,17 @@ const filterButtons = filterForm.querySelectorAll('.img-filters__button');
 let currentFilter = 'filter-default';
 let photos = [];
 
+// Функция инициализации фильтров
+const initFilters = (loadedPhotos) => {
+  photos = loadedPhotos;
+
+  // Показываем блок с фильтрами
+  imgFilters.classList.remove('img-filters--inactive');
+
+  // Добавляем обработчик на форму фильтров
+  filterForm.addEventListener('click', onFilterChange);
+};
+
 // Функция для отображения фотографий
 const renderPhotos = (filteredPhotos) => {
   const picturesContainer = document.querySelector('.pictures');
@@ -56,17 +67,6 @@ const onFilterChange = debounce((evt) => {
   // Отображаем отсортированные фото
   renderPhotos(getFilteredPhotos());
 }, FILTER_DELAY);
-
-// Функция инициализации фильтров
-const initFilters = (loadedPhotos) => {
-  photos = loadedPhotos;
-
-  // Показываем блок с фильтрами
-  imgFilters.classList.remove('img-filters--inactive');
-
-  // Добавляем обработчик на форму фильтров
-  filterForm.addEventListener('click', onFilterChange);
-};
 
 export { initFilters, imgFiltersOpen };
 
