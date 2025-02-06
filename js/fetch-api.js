@@ -1,8 +1,9 @@
 import { generatedPhotos } from './rendering-images';
 import { initializePhotoClickHandlers } from './fullScreenViewer';
 import { form, pristine, imageLoadingWindow, body } from './form-loading-editing-image';
+import { imgFiltersOpen, initFilters } from './filters-image';
 
-const showErrorMessage = (templateId, formData) => {
+const showErrorMessage = (templateId) => {
   const template = document.querySelector(templateId).content.cloneNode(true);
   document.body.appendChild(template);
   const errorWindow = document.body.querySelector('.error');
@@ -100,6 +101,8 @@ const getData = () => {
     })
     .then((data) => {
       generatedPhotos(data);
+      imgFiltersOpen();
+      initFilters(data);
       initializePhotoClickHandlers(data);
     })
     .catch(() => {
@@ -120,7 +123,7 @@ const uploadImage = (formData) => {
       closeImageEditingWindow();
     })
     .catch(() => {
-      showErrorMessage('#error', formData);  // Передаем formData при ошибке
+      showErrorMessage('#error', formData);
     });
 };
 
@@ -132,4 +135,4 @@ form.addEventListener('submit', (evt) => {
   }
 });
 
-export { getData };
+getData();
