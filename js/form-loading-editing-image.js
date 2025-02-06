@@ -8,7 +8,6 @@ const effectPreviews = document.querySelectorAll('.effects__preview'); // Мал
 const form = document.querySelector('.img-upload__form'); // Форма загрузки
 const hashtagInput = document.querySelector('.text__hashtags'); // Поле хештегов
 const commentInput = document.querySelector('.text__description'); // Поле комментария
-// const submitButton = form.querySelector('.img-upload__submit'); // Кнопка отправки
 const MAX_HASHTAGS = 5;
 const MAX_SYMBOLS = 20;
 const MAX_DESCRIPTION_LENGTH = 140;
@@ -102,14 +101,6 @@ radioEffects.forEach((radio) => {
 // Устанавливаем эффект «Оригинал» по умолчанию
 updateSlider('none');
 
-// Функция открытия окна редактирования
-const openImageEditingWindow = () => {
-  imageLoadingWindow.classList.remove('hidden'); // Показываем окно редактирования
-  body.classList.add('modal-open'); // Блокируем прокрутку страницы
-
-  document.addEventListener('keydown', onDocumentKeydown); // Добавляем обработчик Esc
-};
-
 // Функция закрытия окна редактирования
 const closeImageEditingWindow = () => {
   imageLoadingWindow.classList.add('hidden'); // Скрываем окно
@@ -131,6 +122,14 @@ const onDocumentKeydown = (evt) => {
     evt.preventDefault();
     closeImageEditingWindow();
   }
+};
+
+// Функция открытия окна редактирования
+const openImageEditingWindow = () => {
+  imageLoadingWindow.classList.remove('hidden'); // Показываем окно редактирования
+  body.classList.add('modal-open'); // Блокируем прокрутку страницы
+
+  document.addEventListener('keydown', onDocumentKeydown); // Добавляем обработчик Esc
 };
 
 // Обработчик выбора файла
@@ -236,4 +235,4 @@ form.addEventListener('submit', (evt) => {
 // Обработчик закрытия окна при нажатии на кнопку
 closeButton.addEventListener('click', closeImageEditingWindow);
 
-export {};
+export { form, pristine, imageLoadingWindow, body };
