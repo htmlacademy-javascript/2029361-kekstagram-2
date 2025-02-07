@@ -190,6 +190,10 @@ const hashtagRules = [
     check: (inputArray) => inputArray.length <= MAX_HASHTAGS,
     error: `Нельзя указать больше ${MAX_HASHTAGS} хэштегов`,
   },
+  {
+    check: (inputArray) => inputArray.every((item) => /^[A-Za-z0-9#]+$/.test(item.slice(1))),
+    error: 'Хэштег не может содержать спецсимволы',
+  },
 ];
 
 // Функция для валидации хэштегов
@@ -232,16 +236,6 @@ pristine.addValidator(commentInput, validateDescription, getDescriptionError);
 // Обработчики на кнопки увеличения и уменьшения изображения
 smaller.addEventListener('click', onSmallerClick);
 bigger.addEventListener('click', onBiggerClick);
-
-// ======== Отключение Esc при фокусе на полях ========
-[hashtagInput, commentInput].forEach((input) => {
-  input.addEventListener('keydown', (evt) => {
-    if (evt.key === 'Escape') {
-      evt.stopPropagation(); // Останавливаем всплытие события
-      closeImageEditingWindow(); // Закрываем окно редактирования
-    }
-  });
-});
 
 // Обработчик закрытия окна при нажатии на кнопку
 closeButton.addEventListener('click', closeImageEditingWindow);

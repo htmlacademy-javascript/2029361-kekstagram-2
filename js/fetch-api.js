@@ -5,6 +5,7 @@ import { openImageFilters, initFilters } from './filters-image';
 
 const BASE_URL_LOADING = 'https://31.javascript.htmlacademy.pro/kekstagram/data';
 const BASE_URL_SENDING = 'https://31.javascript.htmlacademy.pro/kekstagram';
+const submitButton = form.querySelector('button[type="submit"]');
 
 const showSuccessMessage = () => {
   const template = document.querySelector('#success').content.cloneNode(true);
@@ -12,11 +13,18 @@ const showSuccessMessage = () => {
 
   const successWindow = document.body.querySelector('.success');
 
+  let autoCloseTimeout = null;
+
+  // Функция закрытия сообщения
   const closeMessage = () => {
-    successWindow.remove();
+    if (successWindow && successWindow.parentNode) {
+      successWindow.remove();
+    }
+    clearTimeout(autoCloseTimeout); // Очищаем таймер, если сообщение было закрыто вручную
+    document.removeEventListener('keydown', onEscPress);
   };
 
-  // Закрытие сообщения по клику на кнопку
+  // Закрытие сообщения по кнопке
   const successButton = successWindow.querySelector('.success__button');
   if (successButton) {
     successButton.addEventListener('click', closeMessage);
@@ -38,6 +46,11 @@ const showSuccessMessage = () => {
       closeMessage();
     }
   });
+
+  // Автоматическое закрытие через 5 секунд
+  autoCloseTimeout = setTimeout(() => {
+    closeMessage();
+  }, 5000);
 };
 
 const resetForm = () => {
@@ -117,6 +130,11 @@ function onDocumentKeydown(evt) {
   if (evt.key === 'Escape') {
     evt.preventDefault();
 
+    // Если фокус на полях хештегов или комментариев, не закрываем окно редактирования
+    if (document.activeElement.matches('.text__hashtags, .text__description')) {
+      return;
+    }
+
     if (errorWindow) {
       errorWindow.remove();
       return;
@@ -158,6 +176,7 @@ const uploadImage = (formData) => {
       }
       showSuccessMessage();
       closeImageEditingWindow();
+      submitButton.disabled = false;
     })
     .catch(() => {
       showErrorMessage('#error', formData);
@@ -167,6 +186,7 @@ const uploadImage = (formData) => {
 form.addEventListener('submit', (evt) => {
   evt.preventDefault();
   if (pristine.validate()) {
+    submitButton.disabled = true;
     const formData = new FormData(form);
     uploadImage(formData);
   }
