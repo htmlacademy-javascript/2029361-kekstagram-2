@@ -31,12 +31,12 @@ const showSuccessMessage = () => {
   }
 
   // Закрытие по нажатию на клавишу Esc
-  const onEscPress = (evt) => {
+  function onEscPress (evt) {
     if (evt.key === 'Escape') {
       closeMessage();
       document.removeEventListener('keydown', onEscPress);
     }
-  };
+  }
 
   document.addEventListener('keydown', onEscPress);
 
@@ -85,12 +85,12 @@ const showErrorMessage = (templateId) => {
   };
 
   // Функция для закрытия ошибки по Esc
-  const onErrorEscPress = (evt) => {
+  function onErrorEscPress (evt) {
     if (evt.key === 'Escape') {
       evt.preventDefault();
       closeMessage();
     }
-  };
+  }
 
   // Добавляем обработчик `Esc` ТОЛЬКО на окно ошибки!
   document.addEventListener('keydown', onErrorEscPress);
