@@ -15,7 +15,7 @@ const COMMENTS_STEP = 5;
 const onDocumentKeydown = (evt) => {
   if (evt.key === 'Escape') {
     evt.preventDefault();
-    closeModalBigPicture();
+    closeModal();
   }
 };
 
@@ -42,7 +42,7 @@ const renderComments = () => {
 };
 
 // Функция открытия модального окна
-function openModalBigPicture(photo) {
+function openModal(photo) {
   modalBigPicture.classList.remove('hidden');
   document.addEventListener('keydown', onDocumentKeydown);
 
@@ -57,29 +57,35 @@ function openModalBigPicture(photo) {
   commentCountBlock.classList.remove('hidden');
 
   renderComments();
+  if (currentPhotoComments.length <= COMMENTS_STEP) {
+    commentCountBlock.classList.add('hidden');
+  }
   document.body.classList.add('modal-open');
 }
 
 // Функция закрытия модального окна
-function closeModalBigPicture() {
+function closeModal() {
   modalBigPicture.classList.add('hidden');
   document.removeEventListener('keydown', onDocumentKeydown);
   document.body.classList.remove('modal-open');
 }
 
 loadMoreButton.addEventListener('click', renderComments);
-buttonBigPictureCancel.addEventListener('click', closeModalBigPicture);
+buttonBigPictureCancel.addEventListener('click', closeModal);
 
 // Навешивание обработчика на динамически добавленные картинки
 const initializePhotoClickHandlers = (photos) => {
   photoGallery.addEventListener('click', (event) => {
-    const target = event.target.closest('.picture');
+    const target = event.target.closest('.picture'); // Ищем ближайший элемент с классом .picture
 
+    // Проверяем, существует ли target
+    if (!target) {
+      return; // Выходим из функции, если target не найден
+    }
     const photoId = Number(target.dataset.id);
     const photoData = photos.find((photo) => photo.id === photoId);
-
     if (photoData) {
-      openModalBigPicture(photoData);
+      openModal(photoData);
     }
   });
 };
