@@ -1,4 +1,4 @@
-const fileInput = document.querySelector('.img-upload__input'); // Поле выбора файла
+const imageInput = document.querySelector('.img-upload__input'); // Поле выбора файла
 const imageLoadingWindow = document.querySelector('.img-upload__overlay'); // Окно редактирования
 const closeButton = document.querySelector('.img-upload__cancel'); // Кнопка закрытия
 const body = document.body; // Тело страницы для управления классом modal-open
@@ -21,7 +21,7 @@ const sliderElement = form.querySelector('.effect-level__slider');
 const sliderInput = form.querySelector('.effect-level__value');
 const radioEffects = form.querySelectorAll('.effects__radio');
 const effectLevelContainer = form.querySelector('.img-upload__effect-level');
-const EFFECTS = {
+const IMAGE_EFFECTS = {
   none: { min: 0, max: 100, step: 1, filter: () => 'none', hidden: true },
   chrome: { min: 0, max: 1, step: 0.1, filter: (value) => `grayscale(${value})` },
   sepia: { min: 0, max: 1, step: 0.1, filter: (value) => `sepia(${value})` },
@@ -69,7 +69,7 @@ noUiSlider.create(sliderElement, {
 });
 
 const updateSlider = (effect) => {
-  const settings = EFFECTS[effect];
+  const settings = IMAGE_EFFECTS[effect];
 
   sliderElement.noUiSlider.updateOptions({
     range: { min: settings.min, max: settings.max },
@@ -77,6 +77,7 @@ const updateSlider = (effect) => {
     step: settings.step,
   });
 
+  // Используем сохранённую ссылку
   effectLevelContainer.classList.toggle('hidden', effect === 'none');
 };
 
@@ -90,50 +91,66 @@ radioEffects.forEach((radio) => {
     sliderElement.noUiSlider.on('update', (_, handle, values) => {
       const value = values[handle];
       sliderInput.value = value;
-      previewImage.style.filter = EFFECTS[effect].filter(value);
+      previewImage.style.filter = IMAGE_EFFECTS[effect].filter(value);
     });
 
     // При смене эффекта сбрасываем значение на максимум
-    sliderElement.noUiSlider.set(EFFECTS[effect].max);
+    sliderElement.noUiSlider.set(IMAGE_EFFECTS[effect].max);
   });
 });
 
 // Устанавливаем эффект «Оригинал» по умолчанию
 updateSlider('none');
 
+const handleKeydown = (evt, key, excludedSelectors, callback) => {
+  if (evt.key === key && !document.activeElement.matches(excludedSelectors)) {
+    evt.preventDefault();
+    callback();
+  }
+};
+
 // Функция закрытия окна редактирования
 const closeImageEditingWindow = () => {
   imageLoadingWindow.classList.add('hidden'); // Скрываем окно
   body.classList.remove('modal-open'); // Разрешаем прокрутку страницы
-  fileInput.value = ''; // Очищаем input, чтобы можно было снова выбрать тот же файл
+  imageInput.value = ''; // Очищаем input, чтобы можно было снова выбрать тот же файл
   hashtagInput.value = ''; // Очищаем хештеги
   commentInput.value = ''; // Очищаем комментарий
   pristine.reset(); // Сбрасываем ошибки валидации
+  sliderInput.value = ''; // Сбрасываем слайдер
 
-  document.removeEventListener('keydown', onDocumentKeydown); // Убираем обработчик Esc
+  document.removeEventListener('keydown', handleKeydown); // Убираем обработчик Esc
 
   updateSlider('none');
   previewImage.style.filter = 'none';
 };
 
-// Функция закрытия по клавише Esc, кроме случаев фокуса в полях ввода
-const onDocumentKeydown = (evt) => {
+document.addEventListener('keydown', (evt) => {
+  // Проверяем, открыто ли окно ошибки
+  const errorWindow = document.querySelector('.error');
+
+  // Если нажали Esc, и нет активного фокуса в полях хештегов или комментария
   if (evt.key === 'Escape' && !document.activeElement.matches('.text__hashtags, .text__description')) {
     evt.preventDefault();
-    closeImageEditingWindow();
+
+    if (errorWindow) {
+      errorWindow.remove();
+    } else {
+      closeImageEditingWindow();
+    }
   }
-};
+});
 
 // Функция открытия окна редактирования
 const openImageEditingWindow = () => {
   imageLoadingWindow.classList.remove('hidden'); // Показываем окно редактирования
   body.classList.add('modal-open'); // Блокируем прокрутку страницы
 
-  document.addEventListener('keydown', onDocumentKeydown); // Добавляем обработчик Esc
+  document.addEventListener('keydown', handleKeydown); // Добавляем обработчик Esc
 };
 
 // Обработчик выбора файла
-fileInput.addEventListener('change', (event) => {
+imageInput.addEventListener('change', (event) => {
   const file = event.target.files[0]; // Получаем загруженный файл
   if (!file) {
     return;
@@ -173,13 +190,17 @@ const hashtagRules = [
     check: (inputArray) => inputArray.length <= MAX_HASHTAGS,
     error: `Нельзя указать больше ${MAX_HASHTAGS} хэштегов`,
   },
+  {
+    check: (inputArray) => inputArray.every((item) => /^[A-Za-z0-9#]+$/.test(item.slice(1))),
+    error: 'Хэштег не может содержать спецсимволы',
+  },
 ];
 
 // Функция для валидации хэштегов
 
 const validateHashtags = (value) => {
   if (!value.trim()) {
-    return true; // Пустое значение валидно
+    return true; // ✅ Пустое поле считается валидным
   }
   const inputArray = value.trim().toLowerCase().split(/\s+/);
   return hashtagRules.every((rule) => rule.check(inputArray));
@@ -215,22 +236,6 @@ pristine.addValidator(commentInput, validateDescription, getDescriptionError);
 // Обработчики на кнопки увеличения и уменьшения изображения
 smaller.addEventListener('click', onSmallerClick);
 bigger.addEventListener('click', onBiggerClick);
-
-// ======== Отключение Esc при фокусе на полях ========
-[hashtagInput, commentInput].forEach((input) => {
-  input.addEventListener('keydown', (evt) => {
-    if (evt.key === 'Escape') {
-      evt.stopPropagation(); // Останавливаем всплытие события
-      closeImageEditingWindow(); // Закрываем окно редактирования
-    }
-  });
-});
-
-// ======== Обработчик отправки формы ========
-form.addEventListener('submit', (evt) => {
-  evt.preventDefault(); // Отменяем стандартную отправку формы
-  pristine.validate();
-});
 
 // Обработчик закрытия окна при нажатии на кнопку
 closeButton.addEventListener('click', closeImageEditingWindow);
