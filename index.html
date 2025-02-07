@@ -6,6 +6,7 @@
   <link rel="stylesheet" href="css/normalize.css">
   <link rel="stylesheet" href="css/style.css">
   <link rel="shortcut icon" href="favicon.ico" type="image/x-icon">
+  <link rel="stylesheet" href="vendor/nouislider/nouislider.css">
   <title>Кекстаграм</title>
 </head>
 
@@ -30,7 +31,7 @@
       <section class="img-upload">
         <div class="img-upload__wrapper">
           <h2 class="img-upload__title  visually-hidden">Загрузка фотографии</h2>
-          <form class="img-upload__form" id="upload-select-image" autocomplete="off">
+          <form class="img-upload__form" id="upload-select-image" autocomplete="off" method="post" enctype="multipart/form-data" action="https://31.javascript.htmlacademy.pro/kekstagram">
 
             <!-- Изначальное состояние поля для загрузки изображения -->
             <fieldset class="img-upload__start">
@@ -116,10 +117,13 @@
                 <!-- Добавление хэштегов и комментария к изображению -->
                 <fieldset class="img-upload__text text">
                   <div class="img-upload__field-wrapper">
-                    <input class="text__hashtags" name="hashtags" placeholder="#ХэшТег">
+                    <input class="text__hashtags" name="hashtags" placeholder="#ХэшТег" minlength="2" maxlength="20"
+                    data-pristine-required-message="Обязательное поле"
+                    data-pristine-minlength-message="Минимальная длина 2 символа"
+                    data-pristine-maxlength-message="Максимальная длина 25 символов">
                   </div>
                   <div class="img-upload__field-wrapper">
-                    <textarea class="text__description" name="description" placeholder="Ваш комментарий..."></textarea>
+                    <textarea class="text__description" name="description" placeholder="Ваш комментарий..." maxlength="140"></textarea>
                   </div>
                 </fieldset>
 
@@ -233,7 +237,21 @@
         <h2 class="data-error__title">Не удалось загрузить данные</h2>
       </section>
     </template>
-    <script src="/js/functions.js"></script>
+
+    <!-- Шаблон комментария под фотографией -->
+    <template id="user-comments">
+      <li class="social__comment">
+        <img
+          class= "social__picture"
+          src=""
+          alt=""
+          width="35" height="35">
+        <p class="social__text"></p>
+      </li>
+    </template>
+
     <script src="/js/main.js" type="module"></script>
+    <script src="/vendor/pristine/pristine.min.js"  type="text/javascript"></script>
+    <script src="/vendor/nouislider/nouislider.js"></script>
 </body>
 </html>
