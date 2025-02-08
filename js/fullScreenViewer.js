@@ -1,5 +1,6 @@
 import { photoGallery } from './rendering-images';
 
+const COMMENTS_STEP = 5;
 const modalBigPicture = document.querySelector('.big-picture');
 const buttonBigPictureCancel = modalBigPicture.querySelector('.big-picture__cancel');
 const loadMoreButton = modalBigPicture.querySelector('.comments-loader'); // Кнопка "Загрузить ещё"
@@ -10,17 +11,16 @@ const exampleComment = document.querySelector('#user-comments').content.querySel
 
 let currentPhotoComments = [];
 let shownCommentsCount = 0;
-const COMMENTS_STEP = 5;
 
 const onDocumentKeydown = (evt) => {
   if (evt.key === 'Escape') {
     evt.preventDefault();
-    closeModal();
+    onModalClose();
   }
 };
 
 // Функция добавления комментариев
-const renderComments = () => {
+const onCommentsRender = () => {
   const fragment = document.createDocumentFragment();
   const nextComments = currentPhotoComments.slice(shownCommentsCount, shownCommentsCount + COMMENTS_STEP);
 
@@ -56,7 +56,7 @@ function openModal(photo) {
   loadMoreButton.classList.remove('hidden');
   commentCountBlock.classList.remove('hidden');
 
-  renderComments();
+  onCommentsRender();
   if (currentPhotoComments.length <= COMMENTS_STEP) {
     commentCountBlock.classList.add('hidden');
   }
@@ -64,14 +64,14 @@ function openModal(photo) {
 }
 
 // Функция закрытия модального окна
-function closeModal() {
+function onModalClose() {
   modalBigPicture.classList.add('hidden');
   document.removeEventListener('keydown', onDocumentKeydown);
   document.body.classList.remove('modal-open');
 }
 
-loadMoreButton.addEventListener('click', renderComments);
-buttonBigPictureCancel.addEventListener('click', closeModal);
+loadMoreButton.addEventListener('click', onCommentsRender);
+buttonBigPictureCancel.addEventListener('click', onModalClose);
 
 // Навешивание обработчика на динамически добавленные картинки
 const initializePhotoClickHandlers = (photos) => {

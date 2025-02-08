@@ -1,6 +1,6 @@
 import { generatedPhotos } from './rendering-images';
 import { initializePhotoClickHandlers } from './fullScreenViewer';
-import { form, pristine, imageLoadingWindow, body } from './form-loading-editing-image';
+import { form, pristine, imageLoadingWindow, body, previewImage, effectLevelContainer, controlSizeInput } from './form-loading-editing-image';
 import { openImageFilters, initFilters } from './filters-image';
 
 const BASE_URL_LOADING = 'https://31.javascript.htmlacademy.pro/kekstagram/data';
@@ -16,7 +16,7 @@ const showSuccessMessage = () => {
   let autoCloseTimeout = null;
 
   // Функция закрытия сообщения
-  const closeMessage = () => {
+  const onFormclose = () => {
     if (successWindow && successWindow.parentNode) {
       successWindow.remove();
     }
@@ -27,13 +27,13 @@ const showSuccessMessage = () => {
   // Закрытие сообщения по кнопке
   const successButton = successWindow.querySelector('.success__button');
   if (successButton) {
-    successButton.addEventListener('click', closeMessage);
+    successButton.addEventListener('click', onFormclose);
   }
 
   // Закрытие по нажатию на клавишу Esc
   function onEscPress (evt) {
     if (evt.key === 'Escape') {
-      closeMessage();
+      onFormclose();
       document.removeEventListener('keydown', onEscPress);
     }
   }
@@ -43,20 +43,29 @@ const showSuccessMessage = () => {
   // Закрытие по клику вне окна
   successWindow.addEventListener('click', (evt) => {
     if (!evt.target.closest('.success__inner')) {
-      closeMessage();
+      onFormclose();
     }
   });
 
   // Автоматическое закрытие через 5 секунд
   autoCloseTimeout = setTimeout(() => {
-    closeMessage();
+    onFormclose();
   }, 5000);
 };
 
 const resetForm = () => {
   form.reset();
   pristine.reset();
+
+  // Сбрасываем фильтр
+  previewImage.style.filter = 'none';
+  effectLevelContainer.classList.add('hidden');
+
+  // Сбрасываем масштаб
+  previewImage.style.transform = 'scale(1)';
+  controlSizeInput.value = '100%';
 };
+
 
 const showErrorMessage = (templateId) => {
   const template = document.querySelector(templateId);
@@ -76,7 +85,7 @@ const showErrorMessage = (templateId) => {
   let autoCloseTimeout = null;
 
   // Функция закрытия окна ошибки
-  const closeMessage = () => {
+  const onFormclose = () => {
     if (errorWindow && errorWindow.parentNode) {
       errorWindow.remove();
     }
@@ -88,7 +97,7 @@ const showErrorMessage = (templateId) => {
   function onErrorEscPress (evt) {
     if (evt.key === 'Escape') {
       evt.preventDefault();
-      closeMessage();
+      onFormclose();
     }
   }
 
@@ -98,7 +107,7 @@ const showErrorMessage = (templateId) => {
   // Закрытие по клику вне окна
   errorWindow.addEventListener('click', (evt) => {
     if (!evt.target.closest('.error__inner')) {
-      closeMessage();
+      onFormclose();
     }
   });
 
@@ -106,13 +115,13 @@ const showErrorMessage = (templateId) => {
   const errorButton = errorWindow.querySelector('.error__button');
   if (errorButton) {
     errorButton.addEventListener('click', () => {
-      closeMessage();
+      onFormclose();
     });
   }
 
   // Автоматическое закрытие через 5 секунд
   autoCloseTimeout = setTimeout(() => {
-    closeMessage();
+    onFormclose();
   }, 5000);
 };
 
@@ -120,6 +129,7 @@ const closeImageEditingWindow = () => {
   imageLoadingWindow.classList.add('hidden');
   body.classList.remove('modal-open');
   resetForm();
+  submitButton.disabled = false;
   document.removeEventListener('keydown', onDocumentKeydown);
 };
 
@@ -176,19 +186,20 @@ const uploadImage = (formData) => {
       }
       showSuccessMessage();
       closeImageEditingWindow();
-      submitButton.disabled = false;
     })
     .catch(() => {
-      showErrorMessage('#error', formData);
+      showErrorMessage('#error');
+      submitButton.disabled = false;
     });
 };
+
 
 form.addEventListener('submit', (evt) => {
   evt.preventDefault();
   if (pristine.validate()) {
-    submitButton.disabled = true;
     const formData = new FormData(form);
     uploadImage(formData);
+    submitButton.disabled = true;
   }
 });
 
