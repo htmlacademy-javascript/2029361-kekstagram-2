@@ -1,3 +1,17 @@
+const SCALE_STEP = 25;
+const MIN_SCALE = 25;
+const MAX_SCALE = 100;
+const MAX_HASHTAGS = 5;
+const MAX_SYMBOLS = 20;
+const MAX_DESCRIPTION_LENGTH = 140;
+const IMAGE_EFFECTS = {
+  none: { min: 0, max: 100, step: 1, filter: () => 'none', hidden: true },
+  chrome: { min: 0, max: 1, step: 0.1, filter: (value) => `grayscale(${value})` },
+  sepia: { min: 0, max: 1, step: 0.1, filter: (value) => `sepia(${value})` },
+  marvin: { min: 0, max: 100, step: 1, filter: (value) => `invert(${value}%)` },
+  phobos: { min: 0, max: 3, step: 0.1, filter: (value) => `blur(${value}px)` },
+  heat: { min: 1, max: 3, step: 0.1, filter: (value) => `brightness(${value})` },
+};
 const imageInput = document.querySelector('.img-upload__input'); // Поле выбора файла
 const imageLoadingWindow = document.querySelector('.img-upload__overlay'); // Окно редактирования
 const closeButton = document.querySelector('.img-upload__cancel'); // Кнопка закрытия
@@ -8,9 +22,6 @@ const effectPreviews = document.querySelectorAll('.effects__preview'); // Мал
 const form = document.querySelector('.img-upload__form'); // Форма загрузки
 const hashtagInput = document.querySelector('.text__hashtags'); // Поле хештегов
 const commentInput = document.querySelector('.text__description'); // Поле комментария
-const MAX_HASHTAGS = 5;
-const MAX_SYMBOLS = 20;
-const MAX_DESCRIPTION_LENGTH = 140;
 const pristine = new Pristine(form, {
   classTo: 'img-upload__field-wrapper',
   errorTextParent: 'img-upload__field-wrapper',
@@ -21,22 +32,10 @@ const sliderElement = form.querySelector('.effect-level__slider');
 const sliderInput = form.querySelector('.effect-level__value');
 const radioEffects = form.querySelectorAll('.effects__radio');
 const effectLevelContainer = form.querySelector('.img-upload__effect-level');
-const IMAGE_EFFECTS = {
-  none: { min: 0, max: 100, step: 1, filter: () => 'none', hidden: true },
-  chrome: { min: 0, max: 1, step: 0.1, filter: (value) => `grayscale(${value})` },
-  sepia: { min: 0, max: 1, step: 0.1, filter: (value) => `sepia(${value})` },
-  marvin: { min: 0, max: 100, step: 1, filter: (value) => `invert(${value}%)` },
-  phobos: { min: 0, max: 3, step: 0.1, filter: (value) => `blur(${value}px)` },
-  heat: { min: 1, max: 3, step: 0.1, filter: (value) => `brightness(${value})` },
-};
-
 
 const bigger = form.querySelector('.scale__control--bigger');
 const smaller = form.querySelector('.scale__control--smaller');
 const controlSizeInput = form.querySelector('.scale__control--value');
-const SCALE_STEP = 25;
-const MIN_SCALE = 25;
-const MAX_SCALE = 100;
 
 // Функция уменьшения масштаба
 const onSmallerClick = () => {
@@ -102,7 +101,7 @@ radioEffects.forEach((radio) => {
 // Устанавливаем эффект «Оригинал» по умолчанию
 updateSlider('none');
 
-const handleKeydown = (evt, key, excludedSelectors, callback) => {
+const onDocumentClose = (evt, key, excludedSelectors, callback) => {
   if (evt.key === key && !document.activeElement.matches(excludedSelectors)) {
     evt.preventDefault();
     callback();
@@ -110,7 +109,7 @@ const handleKeydown = (evt, key, excludedSelectors, callback) => {
 };
 
 // Функция закрытия окна редактирования
-const closeImageEditingWindow = () => {
+const onImageEditionClose = () => {
   imageLoadingWindow.classList.add('hidden'); // Скрываем окно
   body.classList.remove('modal-open'); // Разрешаем прокрутку страницы
   imageInput.value = ''; // Очищаем input, чтобы можно было снова выбрать тот же файл
@@ -119,7 +118,7 @@ const closeImageEditingWindow = () => {
   pristine.reset(); // Сбрасываем ошибки валидации
   sliderInput.value = ''; // Сбрасываем слайдер
 
-  document.removeEventListener('keydown', handleKeydown); // Убираем обработчик Esc
+  document.removeEventListener('keydown', onDocumentClose); // Убираем обработчик Esc
 
   updateSlider('none');
   previewImage.style.filter = 'none';
@@ -136,7 +135,7 @@ document.addEventListener('keydown', (evt) => {
     if (errorWindow) {
       errorWindow.remove();
     } else {
-      closeImageEditingWindow();
+      onImageEditionClose();
     }
   }
 });
@@ -146,7 +145,7 @@ const openImageEditingWindow = () => {
   imageLoadingWindow.classList.remove('hidden'); // Показываем окно редактирования
   body.classList.add('modal-open'); // Блокируем прокрутку страницы
 
-  document.addEventListener('keydown', handleKeydown); // Добавляем обработчик Esc
+  document.addEventListener('keydown', onDocumentClose); // Добавляем обработчик Esc
 };
 
 // Обработчик выбора файла
@@ -159,10 +158,14 @@ imageInput.addEventListener('change', (event) => {
   const fileURL = URL.createObjectURL(file); // Создаём ссылку на файл
 
   previewImage.src = fileURL; // Подставляем изображение в главное превью
-  effectPreviews.forEach((preview) => (preview.style.backgroundImage = `url(${fileURL})`)); // Обновляем мини-превью
+
+  effectPreviews.forEach((preview) => {
+    preview.style.backgroundImage = `url(${fileURL})`;
+  }); // Обновляем мини-превью
 
   openImageEditingWindow(); // Открываем окно редактирования
 });
+
 
 // ======== Валидация хештегов ========
 const hashtagRules = [
@@ -238,6 +241,6 @@ smaller.addEventListener('click', onSmallerClick);
 bigger.addEventListener('click', onBiggerClick);
 
 // Обработчик закрытия окна при нажатии на кнопку
-closeButton.addEventListener('click', closeImageEditingWindow);
+closeButton.addEventListener('click', onImageEditionClose);
 
-export { form, pristine, imageLoadingWindow, body };
+export { form, pristine, imageLoadingWindow, body, previewImage, effectLevelContainer, controlSizeInput };

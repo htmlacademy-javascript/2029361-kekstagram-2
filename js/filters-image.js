@@ -7,7 +7,6 @@ const RANDOM_PHOTOS_COUNT = 10;
 const imgFilters = document.querySelector('.img-filters');
 const filterForm = imgFilters.querySelector('.img-filters__form');
 
-
 const filters = document.querySelector('.img-filters');
 const openImageFilters = function () {
   filters.classList.remove('img-filters--inactive');
